@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Young_Serif, IBM_Plex_Mono } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -11,6 +11,18 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
+const youngSerif = Young_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-heading",
+})
+
+const ibmPlexMono = IBM_Plex_Mono({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+  variable: "--font-ibm-mono",
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,7 +32,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable, youngSerif.variable, ibmPlexMono.variable)}
     >
       <body>
         <ThemeProvider>{children}</ThemeProvider>
