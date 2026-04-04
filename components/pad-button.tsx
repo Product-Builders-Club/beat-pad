@@ -24,7 +24,14 @@ type PadButtonProps = {
   onClear: () => void
 }
 
-export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClear }: PadButtonProps) {
+export function PadButton({
+  id,
+  soundName,
+  isKeyActive,
+  onTap,
+  onReplace,
+  onClear,
+}: PadButtonProps) {
   const [tapping, setTapping] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -69,7 +76,10 @@ export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClea
   useEffect(() => {
     if (!menuOpen) return
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setMenuOpen(false)
       }
     }
@@ -90,7 +100,7 @@ export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClea
         onPointerCancel={handlePointerUp}
         className={cn(
           "flex min-h-0 flex-1 flex-col gap-1.5",
-          "select-none outline-none",
+          "outline-none select-none"
         )}
       >
         {/* LED + Label */}
@@ -115,7 +125,7 @@ export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClea
           className={cn(
             "flex min-h-0 w-full flex-1 flex-col items-center justify-center rounded-xl",
             "transition-transform duration-75",
-            (tapping || isKeyActive) && "animate-pad-tap",
+            (tapping || isKeyActive) && "animate-pad-tap"
           )}
           style={
             loaded
@@ -158,12 +168,7 @@ export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClea
             </>
           ) : (
             <>
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 6v12M6 12h12"
                   stroke="#6B5848"
@@ -185,7 +190,7 @@ export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClea
       {/* Context menu */}
       {menuOpen && (
         <div
-          className="absolute left-0 top-full z-10 mt-1 w-[180px] overflow-hidden rounded-xl"
+          className="absolute top-full left-0 z-10 mt-1 w-[180px] overflow-hidden rounded-xl"
           style={{
             backgroundColor: "#2A1E15",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -202,8 +207,22 @@ export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClea
             }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M5 3.5H9.5C10.0523 3.5 10.5 3.94772 10.5 4.5V9M5 3.5L7 1.5M5 3.5L7 5.5" stroke="#C68B3E" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="3" y="5.5" width="7.5" height="7" rx="1" stroke="#C68B3E" strokeWidth="1.2"/>
+              <path
+                d="M5 3.5H9.5C10.0523 3.5 10.5 3.94772 10.5 4.5V9M5 3.5L7 1.5M5 3.5L7 5.5"
+                stroke="#C68B3E"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <rect
+                x="3"
+                y="5.5"
+                width="7.5"
+                height="7"
+                rx="1"
+                stroke="#C68B3E"
+                strokeWidth="1.2"
+              />
             </svg>
             <span
               className="font-[family-name:var(--font-ibm-mono)] text-xs tracking-[0.3px]"
@@ -221,7 +240,13 @@ export function PadButton({ id, soundName, isKeyActive, onTap, onReplace, onClea
             }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 3.5h10M5.5 6v4M8.5 6v4M3 3.5l.5 8.5a1 1 0 001 1h5a1 1 0 001-1l.5-8.5M5 3.5V2a1 1 0 011-1h2a1 1 0 011 1v1.5" stroke="#C45C4A" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path
+                d="M2 3.5h10M5.5 6v4M8.5 6v4M3 3.5l.5 8.5a1 1 0 001 1h5a1 1 0 001-1l.5-8.5M5 3.5V2a1 1 0 011-1h2a1 1 0 011 1v1.5"
+                stroke="#C45C4A"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             <span
               className="font-[family-name:var(--font-ibm-mono)] text-xs tracking-[0.3px]"
