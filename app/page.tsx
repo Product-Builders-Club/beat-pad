@@ -25,7 +25,7 @@ export default function Page() {
       style={{ backgroundColor: "#EDE6DA" }}
     >
       {/* Nav */}
-      <nav className="flex w-full items-center justify-between px-10 py-7 lg:px-20">
+      <nav className="flex w-full items-center justify-between px-5 py-7 sm:px-10 lg:px-20">
         <div className="flex items-baseline gap-3">
           <span
             className="font-[family-name:var(--font-heading)] text-[28px] leading-none"
@@ -34,30 +34,30 @@ export default function Page() {
             BeatPad
           </span>
           <span
-            className="font-[family-name:var(--font-ibm-mono)] text-[10px] uppercase tracking-[2px]"
+            className="font-[family-name:var(--font-ibm-mono)] text-[10px] tracking-[2px] uppercase"
             style={{ color: "#8B7355" }}
           >
             Drum Machine
           </span>
         </div>
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-4 sm:gap-10">
           <a
             href="#features"
-            className="hidden font-[family-name:var(--font-ibm-mono)] text-xs uppercase tracking-[1.5px] sm:block"
+            className="hidden font-[family-name:var(--font-ibm-mono)] text-xs tracking-[1.5px] uppercase sm:block"
             style={{ color: "#5C4A35" }}
           >
             Features
           </a>
           <a
             href="#sounds"
-            className="hidden font-[family-name:var(--font-ibm-mono)] text-xs uppercase tracking-[1.5px] sm:block"
+            className="hidden font-[family-name:var(--font-ibm-mono)] text-xs tracking-[1.5px] uppercase sm:block"
             style={{ color: "#5C4A35" }}
           >
             Sounds
           </a>
           <Link
             href="/beat"
-            className="rounded-lg px-6 py-2.5 font-[family-name:var(--font-ibm-mono)] text-xs uppercase tracking-[1.5px] transition-opacity hover:opacity-80"
+            className="rounded-lg px-6 py-2.5 font-[family-name:var(--font-ibm-mono)] text-xs tracking-[1.5px] uppercase transition-opacity hover:opacity-80"
             style={{ backgroundColor: "#3D2B1A", color: "#EDE6DA" }}
           >
             Launch App
@@ -66,7 +66,7 @@ export default function Page() {
       </nav>
 
       {/* Hero */}
-      <section className="flex flex-col items-center gap-6 px-10 pt-16 pb-4 lg:px-20 lg:pt-24">
+      <section className="flex flex-col items-center gap-6 px-5 pt-16 pb-4 sm:px-10 lg:px-20 lg:pt-24">
         <h1
           className="max-w-[900px] text-center font-[family-name:var(--font-heading)] text-5xl leading-[1] tracking-tight sm:text-7xl lg:text-[88px]"
           style={{ color: "#2C1E10" }}
@@ -83,17 +83,17 @@ export default function Page() {
       </section>
 
       {/* CTA Buttons */}
-      <div className="flex items-center justify-center gap-4 px-10 pt-4 pb-16">
+      <div className="flex flex-col items-center justify-center gap-4 px-5 pt-4 pb-16 sm:flex-row sm:px-10">
         <Link
           href="/beat"
-          className="rounded-[10px] px-9 py-4 font-[family-name:var(--font-ibm-mono)] text-[13px] uppercase tracking-[1.5px] transition-opacity hover:opacity-80"
+          className="w-full rounded-[10px] px-6 py-3.5 text-center font-[family-name:var(--font-ibm-mono)] text-[13px] tracking-[1.5px] uppercase transition-opacity hover:opacity-80 sm:w-auto sm:px-9 sm:py-4"
           style={{ backgroundColor: "#3D2B1A", color: "#EDE6DA" }}
         >
           Start Making Beats
         </Link>
         <a
           href="#sounds"
-          className="rounded-[10px] border-[1.5px] px-9 py-4 font-[family-name:var(--font-ibm-mono)] text-[13px] uppercase tracking-[1.5px] transition-opacity hover:opacity-80"
+          className="w-full rounded-[10px] border-[1.5px] px-6 py-3.5 text-center font-[family-name:var(--font-ibm-mono)] text-[13px] tracking-[1.5px] uppercase transition-opacity hover:opacity-80 sm:w-auto sm:px-9 sm:py-4"
           style={{ borderColor: "#3D2B1A", color: "#3D2B1A" }}
         >
           Listen to Demos
@@ -101,9 +101,9 @@ export default function Page() {
       </div>
 
       {/* Phone Mockup */}
-      <div className="flex justify-center px-10 pb-5">
+      <div className="flex justify-center px-5 pb-5 sm:px-10">
         <div
-          className="flex w-[320px] flex-col gap-0 rounded-[32px] p-4"
+          className="flex w-full max-w-[320px] flex-col gap-0 rounded-[32px] p-4"
           style={{
             backgroundColor: "#3D2B1A",
             boxShadow:
@@ -111,7 +111,7 @@ export default function Page() {
           }}
         >
           {/* Notch */}
-          <div className="flex justify-center pb-3 pt-2">
+          <div className="flex justify-center pt-2 pb-3">
             <div
               className="h-1.5 w-20 rounded-full"
               style={{ backgroundColor: "#5C4A35" }}
@@ -132,7 +132,7 @@ export default function Page() {
                   BeatPad
                 </span>
                 <span
-                  className="font-[family-name:var(--font-ibm-mono)] text-[7px] uppercase tracking-[1.5px]"
+                  className="font-[family-name:var(--font-ibm-mono)] text-[7px] tracking-[1.5px] uppercase"
                   style={{ color: "#8B7355" }}
                 >
                   Drum Machine
@@ -144,7 +144,7 @@ export default function Page() {
                   style={{ backgroundColor: "#C0392B" }}
                 />
                 <span
-                  className="font-[family-name:var(--font-ibm-mono)] text-[7px] uppercase tracking-[1px]"
+                  className="font-[family-name:var(--font-ibm-mono)] text-[7px] tracking-[1px] uppercase"
                   style={{ color: "#8B7355" }}
                 >
                   Active
@@ -168,7 +168,7 @@ export default function Page() {
                       style={{ backgroundColor: "#DDD2BF" }}
                     >
                       <span
-                        className="font-[family-name:var(--font-ibm-mono)] text-[9px] uppercase tracking-[1px]"
+                        className="font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[1px] uppercase"
                         style={{ color: "#3D2B1A" }}
                       >
                         {name}
@@ -194,10 +194,10 @@ export default function Page() {
       {/* Features Section */}
       <section
         id="features"
-        className="flex flex-col items-center gap-4 px-10 pt-24 pb-10 lg:px-20"
+        className="flex flex-col items-center gap-4 px-5 pt-24 pb-10 sm:px-10 lg:px-20"
       >
         <span
-          className="font-[family-name:var(--font-ibm-mono)] text-[11px] uppercase tracking-[3px]"
+          className="font-[family-name:var(--font-ibm-mono)] text-[11px] tracking-[3px] uppercase"
           style={{ color: "#C0392B" }}
         >
           Why BeatPad
@@ -220,7 +220,7 @@ export default function Page() {
       </section>
 
       {/* Feature Cards */}
-      <div className="grid gap-6 px-10 sm:grid-cols-3 lg:px-20">
+      <div className="grid gap-6 px-5 sm:px-10 md:grid-cols-3 lg:px-20">
         {[
           {
             icon: "\u{1F39B}\uFE0F",
@@ -268,10 +268,10 @@ export default function Page() {
       {/* Sound Library Section */}
       <section
         id="sounds"
-        className="flex flex-col items-center gap-4 px-10 pt-24 pb-10 lg:px-20"
+        className="flex flex-col items-center gap-4 px-5 pt-24 pb-10 sm:px-10 lg:px-20"
       >
         <span
-          className="font-[family-name:var(--font-ibm-mono)] text-[11px] uppercase tracking-[3px]"
+          className="font-[family-name:var(--font-ibm-mono)] text-[11px] tracking-[3px] uppercase"
           style={{ color: "#C0392B" }}
         >
           Sound Library
@@ -292,7 +292,7 @@ export default function Page() {
       </section>
 
       {/* Sound Kit Cards */}
-      <div className="grid gap-5 px-10 sm:grid-cols-3 lg:px-20">
+      <div className="grid gap-5 px-5 sm:px-10 md:grid-cols-3 lg:px-20">
         {[
           {
             name: "808 Classic",
@@ -364,7 +364,7 @@ export default function Page() {
                   style={{ backgroundColor: kit.badgeColor }}
                 />
                 <span
-                  className="font-[family-name:var(--font-ibm-mono)] text-[9px] uppercase tracking-[1px]"
+                  className="font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[1px] uppercase"
                   style={{ color: "#8B7355" }}
                 >
                   {kit.badge}
@@ -375,7 +375,7 @@ export default function Page() {
               {kit.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-md px-2.5 py-1 font-[family-name:var(--font-ibm-mono)] text-[9px] uppercase tracking-[1px]"
+                  className="rounded-md px-2.5 py-1 font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[1px] uppercase"
                   style={{ backgroundColor: "#C9B99A", color: "#5C4A35" }}
                 >
                   {tag}
@@ -389,7 +389,7 @@ export default function Page() {
 
       {/* Stats Bar */}
       <section
-        className="mt-24 flex flex-wrap justify-center gap-16 px-10 py-24 sm:gap-20 lg:px-20"
+        className="mt-24 grid grid-cols-2 gap-x-8 gap-y-10 px-5 py-24 sm:gap-x-12 sm:px-10 md:grid-cols-4 md:gap-x-16 lg:px-20"
         style={{ backgroundColor: "#3D2B1A" }}
       >
         {[
@@ -398,7 +398,10 @@ export default function Page() {
           { value: "<5ms", label: "Latency" },
           { value: "Free", label: "Forever" },
         ].map((stat) => (
-          <div key={stat.label} className="flex flex-col items-center gap-1.5">
+          <div
+            key={stat.label}
+            className="flex flex-col items-center gap-1.5 text-center"
+          >
             <span
               className="font-[family-name:var(--font-heading)] text-4xl sm:text-[56px]"
               style={{ color: "#EDE6DA" }}
@@ -406,7 +409,7 @@ export default function Page() {
               {stat.value}
             </span>
             <span
-              className="font-[family-name:var(--font-ibm-mono)] text-[11px] uppercase tracking-[2px]"
+              className="font-[family-name:var(--font-ibm-mono)] text-[11px] tracking-[2px] uppercase"
               style={{ color: "#A89880" }}
             >
               {stat.label}
@@ -416,7 +419,7 @@ export default function Page() {
       </section>
 
       {/* Final CTA */}
-      <section className="flex flex-col items-center gap-6 px-10 pt-24 pb-4 lg:px-20">
+      <section className="flex flex-col items-center gap-6 px-5 pt-24 pb-4 sm:px-10 lg:px-20">
         <h2
           className="max-w-[700px] text-center font-[family-name:var(--font-heading)] text-4xl leading-[1.1] tracking-tight sm:text-[56px]"
           style={{ color: "#2C1E10" }}
@@ -431,10 +434,10 @@ export default function Page() {
         </p>
       </section>
 
-      <div className="flex justify-center px-10 pt-4 pb-24">
+      <div className="flex justify-center px-5 pt-4 pb-24 sm:px-10">
         <Link
           href="/beat"
-          className="rounded-xl px-12 py-[18px] font-[family-name:var(--font-ibm-mono)] text-sm font-semibold uppercase tracking-[2px] transition-opacity hover:opacity-80"
+          className="rounded-xl px-12 py-[18px] font-[family-name:var(--font-ibm-mono)] text-sm font-semibold tracking-[2px] uppercase transition-opacity hover:opacity-80"
           style={{
             backgroundColor: "#D4A017",
             color: "#2C1E10",
@@ -447,7 +450,7 @@ export default function Page() {
 
       {/* Footer */}
       <footer
-        className="flex flex-col items-center justify-between gap-6 border-t px-10 py-8 sm:flex-row lg:px-20"
+        className="flex flex-col items-center justify-between gap-6 border-t px-5 py-8 sm:flex-row sm:px-10 lg:px-20"
         style={{ borderColor: "rgba(60,43,26,0.12)" }}
       >
         <div className="flex items-baseline gap-2.5">
@@ -458,7 +461,7 @@ export default function Page() {
             BeatPad
           </span>
           <span
-            className="font-[family-name:var(--font-ibm-mono)] text-[9px] uppercase tracking-[1.5px]"
+            className="font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[1.5px] uppercase"
             style={{ color: "#8B7355" }}
           >
             Drum Machine

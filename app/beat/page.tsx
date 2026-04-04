@@ -22,8 +22,8 @@ type PadSound = {
 }
 
 export default function BeatPage() {
-  const [pads, setPads] = useState<Record<string, PadSound | null>>(
-    () => Object.fromEntries(PAD_IDS.map((id) => [id, null]))
+  const [pads, setPads] = useState<Record<string, PadSound | null>>(() =>
+    Object.fromEntries(PAD_IDS.map((id) => [id, null]))
   )
   const audioCtxRef = useRef<AudioContext | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -121,81 +121,79 @@ export default function BeatPage() {
       style={{ backgroundColor: "#F0E4D4" }}
     >
       <div className="flex h-full w-full max-w-[390px] flex-col">
-      {/* Header */}
-      <div className="flex shrink-0 items-center justify-between px-7 pt-10">
-        <div className="flex flex-col gap-0.5">
-          <h1
-            className="font-[family-name:var(--font-heading)] text-2xl leading-none"
-            style={{ color: "#3D2B1F" }}
-          >
-            BeatPad
-          </h1>
-          <span
-            className="font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[2px]"
-            style={{ color: "#A08A70" }}
-          >
-            DRUM MACHINE
-          </span>
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between px-7 pt-10">
+          <div className="flex flex-col gap-0.5">
+            <h1
+              className="font-[family-name:var(--font-heading)] text-2xl leading-none"
+              style={{ color: "#3D2B1F" }}
+            >
+              BeatPad
+            </h1>
+            <span
+              className="font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[2px]"
+              style={{ color: "#A08A70" }}
+            >
+              DRUM MACHINE
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="size-2 rounded-full"
+              style={{
+                backgroundColor: loadedCount > 0 ? "#C45C4A" : "#5C4A3A",
+                boxShadow:
+                  loadedCount > 0 ? "0 0 6px rgba(196,92,74,0.5)" : "none",
+              }}
+            />
+            <span
+              className="font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[1px]"
+              style={{ color: "#A08A70" }}
+            >
+              {loadedCount > 0 ? "ACTIVE" : "READY"}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
+
+        {/* Bezel + Pad Grid */}
+        <div className="min-h-0 flex-1 px-5 pt-5 pb-6">
           <div
-            className="size-2 rounded-full"
+            className="flex h-full flex-col gap-3 rounded-[20px] p-4"
             style={{
-              backgroundColor: loadedCount > 0 ? "#C45C4A" : "#5C4A3A",
+              backgroundColor: "#3D2B1F",
               boxShadow:
-                loadedCount > 0
-                  ? "0 0 6px rgba(196,92,74,0.5)"
-                  : "none",
+                "inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.08)",
             }}
-          />
-          <span
-            className="font-[family-name:var(--font-ibm-mono)] text-[9px] tracking-[1px]"
-            style={{ color: "#A08A70" }}
           >
-            {loadedCount > 0 ? "ACTIVE" : "READY"}
-          </span>
+            {[0, 1, 2, 3].map((row) => (
+              <div key={row} className="flex min-h-0 flex-1 gap-3">
+                {[0, 1].map((col) => {
+                  const id = PAD_IDS[row * 2 + col]
+                  return (
+                    <PadButton
+                      key={id}
+                      id={id}
+                      soundName={pads[id]?.name ?? null}
+                      isKeyActive={keyActivePads.has(id)}
+                      onTap={() => handlePadTap(id)}
+                      onReplace={() => handleReplace(id)}
+                      onClear={() => handleClear(id)}
+                    />
+                  )
+                })}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Bezel + Pad Grid */}
-      <div className="min-h-0 flex-1 px-5 pb-6 pt-5">
-        <div
-          className="flex h-full flex-col gap-3 rounded-[20px] p-4"
-          style={{
-            backgroundColor: "#3D2B1F",
-            boxShadow:
-              "inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.08)",
-          }}
-        >
-          {[0, 1, 2, 3].map((row) => (
-            <div key={row} className="flex min-h-0 flex-1 gap-3">
-              {[0, 1].map((col) => {
-                const id = PAD_IDS[row * 2 + col]
-                return (
-                  <PadButton
-                    key={id}
-                    id={id}
-                    soundName={pads[id]?.name ?? null}
-                    isKeyActive={keyActivePads.has(id)}
-                    onTap={() => handlePadTap(id)}
-                    onReplace={() => handleReplace(id)}
-                    onClear={() => handleClear(id)}
-                  />
-                )
-              })}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="audio/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
       </div>
     </div>
   )
