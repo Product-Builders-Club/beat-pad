@@ -4,8 +4,16 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import { PadButton } from "@/components/pad-button"
 
 const PAD_IDS = ["A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2"] as const
+type PadId = (typeof PAD_IDS)[number]
 
-const KEY_TO_PAD: Record<string, string> = {
+function createPadRecord<T>(getValue: (padId: PadId) => T): Record<PadId, T> {
+  return Object.fromEntries(PAD_IDS.map((id) => [id, getValue(id)])) as Record<
+    PadId,
+    T
+  >
+}
+
+const KEY_TO_PAD: Record<string, PadId> = {
   "5": "A1",
   "6": "A2",
   t: "B1",
@@ -22,12 +30,15 @@ type PadSound = {
 }
 
 export default function BeatPage() {
-  const [pads, setPads] = useState<Record<string, PadSound | null>>(() =>
-    Object.fromEntries(PAD_IDS.map((id) => [id, null]))
+  const [pads, setPads] = useState<Record<PadId, PadSound | null>>(() =>
+    createPadRecord(() => null)
   )
   const audioCtxRef = useRef<AudioContext | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const activePadRef = useRef<string | null>(null)
+  const activePadRef = useRef<PadId | null>(null)
+  const activeSourcesRef = useRef<Record<PadId, AudioBufferSourceNode | null>>(
+    createPadRecord(() => null)
+  )
 
   function getAudioContext() {
     if (!audioCtxRef.current) {
@@ -39,19 +50,42 @@ export default function BeatPage() {
     return audioCtxRef.current
   }
 
-  const playSound = useCallback((audioBuffer: AudioBuffer) => {
+  const stopPadPlayback = useCallback((padId: PadId) => {
+    const source = activeSourcesRef.current[padId]
+    if (!source) return
+
+    activeSourcesRef.current[padId] = null
+
+    try {
+      source.stop()
+    } catch {
+      // Ignore invalid-state errors when a source has already ended.
+    }
+  }, [])
+
+  const playSound = useCallback((padId: PadId, audioBuffer: AudioBuffer) => {
     const ctx = getAudioContext()
+    stopPadPlayback(padId)
+
     const source = ctx.createBufferSource()
     source.buffer = audioBuffer
     source.connect(ctx.destination)
+    source.onended = () => {
+      if (activeSourcesRef.current[padId] === source) {
+        activeSourcesRef.current[padId] = null
+      }
+      source.disconnect()
+    }
+
+    activeSourcesRef.current[padId] = source
     source.start(0)
-  }, [])
+  }, [stopPadPlayback])
 
   const handlePadTap = useCallback(
-    (id: string) => {
+    (id: PadId) => {
       const pad = pads[id]
       if (pad) {
-        playSound(pad.audioBuffer)
+        playSound(id, pad.audioBuffer)
       } else {
         activePadRef.current = id
         fileInputRef.current?.click()
@@ -60,14 +94,16 @@ export default function BeatPage() {
     [pads, playSound]
   )
 
-  const handleReplace = useCallback((id: string) => {
+  const handleReplace = useCallback((id: PadId) => {
+    stopPadPlayback(id)
     activePadRef.current = id
     fileInputRef.current?.click()
-  }, [])
+  }, [stopPadPlayback])
 
-  const handleClear = useCallback((id: string) => {
+  const handleClear = useCallback((id: PadId) => {
+    stopPadPlayback(id)
     setPads((prev) => ({ ...prev, [id]: null }))
-  }, [])
+  }, [stopPadPlayback])
 
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,15 +116,16 @@ export default function BeatPage() {
       const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
 
       const name = file.name.replace(/\.[^.]+$/, "")
+      stopPadPlayback(padId)
       setPads((prev) => ({ ...prev, [padId]: { name, audioBuffer } }))
 
       activePadRef.current = null
       e.target.value = ""
     },
-    []
+    [stopPadPlayback]
   )
 
-  const [keyActivePads, setKeyActivePads] = useState<Set<string>>(new Set())
+  const [keyActivePads, setKeyActivePads] = useState<Set<PadId>>(new Set())
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -97,7 +134,7 @@ export default function BeatPage() {
       if (!padId) return
       const pad = pads[padId]
       if (pad) {
-        playSound(pad.audioBuffer)
+        playSound(padId, pad.audioBuffer)
         setKeyActivePads((prev) => new Set(prev).add(padId))
         setTimeout(() => {
           setKeyActivePads((prev) => {
@@ -112,6 +149,25 @@ export default function BeatPage() {
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [pads, playSound])
+
+  useEffect(() => {
+    const activeSources = activeSourcesRef.current
+
+    return () => {
+      for (const padId of PAD_IDS) {
+        const source = activeSources[padId]
+        if (!source) continue
+
+        activeSources[padId] = null
+
+        try {
+          source.stop()
+        } catch {
+          // Ignore invalid-state errors during teardown.
+        }
+      }
+    }
+  }, [])
 
   const loadedCount = Object.values(pads).filter(Boolean).length
 
