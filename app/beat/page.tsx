@@ -5,6 +5,9 @@ import { PadButton } from "@/components/pad-button"
 
 const PAD_IDS = ["A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2"] as const
 type PadId = (typeof PAD_IDS)[number]
+const LEGACY_PAD_STORAGE_KEY = "beat-pad:pads"
+const PAD_DB_NAME = "beat-pad-db"
+const PAD_STORE_NAME = "pad-sounds"
 
 function createPadRecord<T>(getValue: (padId: PadId) => T): Record<PadId, T> {
   return Object.fromEntries(PAD_IDS.map((id) => [id, getValue(id)])) as Record<
@@ -26,13 +29,146 @@ const KEY_TO_PAD: Record<string, PadId> = {
 
 type PadSound = {
   name: string
+  audioFile: Blob
   audioBuffer: AudioBuffer
+}
+
+type StoredPadSound = {
+  id: PadId
+  name: string
+  audioFile: Blob
+}
+
+type LegacyStoredPadSound = {
+  name: string
+  sourceDataUrl: string
+}
+
+function openPadDatabase() {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const request = window.indexedDB.open(PAD_DB_NAME, 1)
+
+    request.onupgradeneeded = () => {
+      const db = request.result
+
+      if (!db.objectStoreNames.contains(PAD_STORE_NAME)) {
+        db.createObjectStore(PAD_STORE_NAME, { keyPath: "id" })
+      }
+    }
+
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => {
+      reject(request.error ?? new Error("Failed to open pad database."))
+    }
+  })
+}
+
+function loadPadRecords() {
+  return new Promise<Record<PadId, StoredPadSound | null>>((resolve, reject) => {
+    openPadDatabase()
+      .then((db) => {
+        const transaction = db.transaction(PAD_STORE_NAME, "readonly")
+        const store = transaction.objectStore(PAD_STORE_NAME)
+        const request = store.getAll()
+
+        request.onsuccess = () => {
+          const storedPads = createPadRecord(() => null as StoredPadSound | null)
+
+          for (const record of request.result as StoredPadSound[]) {
+            storedPads[record.id] = record
+          }
+
+          resolve(storedPads)
+          db.close()
+        }
+
+        request.onerror = () => {
+          reject(request.error ?? new Error("Failed to load saved pads."))
+          db.close()
+        }
+      })
+      .catch(reject)
+  })
+}
+
+function savePadRecords(pads: Record<PadId, PadSound | null>) {
+  return new Promise<void>((resolve, reject) => {
+    openPadDatabase()
+      .then((db) => {
+        const transaction = db.transaction(PAD_STORE_NAME, "readwrite")
+        const store = transaction.objectStore(PAD_STORE_NAME)
+
+        for (const padId of PAD_IDS) {
+          const pad = pads[padId]
+
+          if (pad) {
+            store.put({
+              id: padId,
+              name: pad.name,
+              audioFile: pad.audioFile,
+            } satisfies StoredPadSound)
+          } else {
+            store.delete(padId)
+          }
+        }
+
+        transaction.oncomplete = () => {
+          db.close()
+          resolve()
+        }
+
+        transaction.onerror = () => {
+          db.close()
+          reject(
+            transaction.error ?? new Error("Failed to save pads to IndexedDB.")
+          )
+        }
+      })
+      .catch(reject)
+  })
+}
+
+async function loadLegacyPadRecords() {
+  const storedPadsRaw = window.localStorage.getItem(LEGACY_PAD_STORAGE_KEY)
+  if (!storedPadsRaw) return null
+
+  try {
+    const storedPads = JSON.parse(storedPadsRaw) as Record<
+      PadId,
+      LegacyStoredPadSound | null
+    >
+
+    const migratedPads = await Promise.all(
+      PAD_IDS.map(async (padId) => {
+        const storedPad = storedPads[padId]
+        if (!storedPad) return [padId, null] as const
+
+        const response = await fetch(storedPad.sourceDataUrl)
+        const audioFile = await response.blob()
+
+        return [
+          padId,
+          {
+            id: padId,
+            name: storedPad.name,
+            audioFile,
+          },
+        ] as const
+      })
+    )
+
+    return Object.fromEntries(migratedPads) as Record<PadId, StoredPadSound | null>
+  } catch (error) {
+    console.error("Failed to migrate pads from localStorage.", error)
+    return null
+  }
 }
 
 export default function BeatPage() {
   const [pads, setPads] = useState<Record<PadId, PadSound | null>>(() =>
     createPadRecord(() => null)
   )
+  const [storageReady, setStorageReady] = useState(false)
   const audioCtxRef = useRef<AudioContext | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const activePadRef = useRef<PadId | null>(null)
@@ -40,15 +176,20 @@ export default function BeatPage() {
     createPadRecord(() => null)
   )
 
-  function getAudioContext() {
+  const ensureAudioContext = useCallback(() => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new AudioContext()
     }
-    if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume()
-    }
     return audioCtxRef.current
-  }
+  }, [])
+
+  const getAudioContext = useCallback(() => {
+    const ctx = ensureAudioContext()
+    if (ctx.state === "suspended") {
+      void ctx.resume()
+    }
+    return ctx
+  }, [ensureAudioContext])
 
   const stopPadPlayback = useCallback((padId: PadId) => {
     const source = activeSourcesRef.current[padId]
@@ -63,23 +204,26 @@ export default function BeatPage() {
     }
   }, [])
 
-  const playSound = useCallback((padId: PadId, audioBuffer: AudioBuffer) => {
-    const ctx = getAudioContext()
-    stopPadPlayback(padId)
+  const playSound = useCallback(
+    (padId: PadId, audioBuffer: AudioBuffer) => {
+      const ctx = getAudioContext()
+      stopPadPlayback(padId)
 
-    const source = ctx.createBufferSource()
-    source.buffer = audioBuffer
-    source.connect(ctx.destination)
-    source.onended = () => {
-      if (activeSourcesRef.current[padId] === source) {
-        activeSourcesRef.current[padId] = null
+      const source = ctx.createBufferSource()
+      source.buffer = audioBuffer
+      source.connect(ctx.destination)
+      source.onended = () => {
+        if (activeSourcesRef.current[padId] === source) {
+          activeSourcesRef.current[padId] = null
+        }
+        source.disconnect()
       }
-      source.disconnect()
-    }
 
-    activeSourcesRef.current[padId] = source
-    source.start(0)
-  }, [stopPadPlayback])
+      activeSourcesRef.current[padId] = source
+      source.start(0)
+    },
+    [getAudioContext, stopPadPlayback]
+  )
 
   const handlePadTap = useCallback(
     (id: PadId) => {
@@ -117,15 +261,111 @@ export default function BeatPage() {
 
       const name = file.name.replace(/\.[^.]+$/, "")
       stopPadPlayback(padId)
-      setPads((prev) => ({ ...prev, [padId]: { name, audioBuffer } }))
+      setPads((prev) => ({
+        ...prev,
+        [padId]: { name, audioFile: file, audioBuffer },
+      }))
 
       activePadRef.current = null
       e.target.value = ""
     },
-    [stopPadPlayback]
+    [getAudioContext, stopPadPlayback]
   )
 
   const [keyActivePads, setKeyActivePads] = useState<Set<PadId>>(new Set())
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadStoredPads() {
+      try {
+        let storedPads = await loadPadRecords()
+
+        if (!PAD_IDS.some((padId) => storedPads[padId])) {
+          const legacyPads = await loadLegacyPadRecords()
+
+          if (legacyPads) {
+            storedPads = legacyPads
+
+            const migratedPads = await Promise.all(
+              PAD_IDS.map(async (padId) => {
+                const storedPad = legacyPads[padId]
+                if (!storedPad) return [padId, null] as const
+
+                const arrayBuffer = await storedPad.audioFile.arrayBuffer()
+                const audioBuffer = await ensureAudioContext().decodeAudioData(
+                  arrayBuffer
+                )
+
+                return [
+                  padId,
+                  {
+                    name: storedPad.name,
+                    audioFile: storedPad.audioFile,
+                    audioBuffer,
+                  },
+                ] as const
+              })
+            )
+
+            await savePadRecords(
+              Object.fromEntries(migratedPads) as Record<PadId, PadSound | null>
+            )
+          }
+        }
+
+        const ctx = ensureAudioContext()
+        const nextPads = await Promise.all(
+          PAD_IDS.map(async (padId) => {
+            const storedPad = storedPads[padId]
+            if (!storedPad) return [padId, null] as const
+
+            try {
+              const arrayBuffer = await storedPad.audioFile.arrayBuffer()
+              const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
+
+              return [
+                padId,
+                {
+                  name: storedPad.name,
+                  audioFile: storedPad.audioFile,
+                  audioBuffer,
+                },
+              ] as const
+            } catch {
+              return [padId, null] as const
+            }
+          })
+        )
+
+        if (!cancelled) {
+          setPads(Object.fromEntries(nextPads) as Record<PadId, PadSound | null>)
+        }
+      } catch (error) {
+        console.error("Failed to restore pads from IndexedDB.", error)
+      } finally {
+        window.localStorage.removeItem(LEGACY_PAD_STORAGE_KEY)
+
+        if (!cancelled) {
+          setStorageReady(true)
+        }
+      }
+    }
+
+    void loadStoredPads()
+
+    return () => {
+      cancelled = true
+    }
+  }, [ensureAudioContext])
+
+  useEffect(() => {
+    if (!storageReady) return
+
+    void savePadRecords(pads).catch((error) => {
+      console.error("Failed to persist pads to IndexedDB.", error)
+    })
+  }, [pads, storageReady])
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
